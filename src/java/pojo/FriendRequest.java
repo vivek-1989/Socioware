@@ -6,169 +6,212 @@ package pojo;
 
 import java.sql.*;
 import java.text.ParseException;
+import java.util.ArrayList;
 
 /**
  *
  * @author Ashish
  */
-public class FriendRequest {
-    private String reqSender;
-
-    
-    private String reqReciever;
-    private String msg;
-    private String reqdate;
-    private String status;
-    private String reqid;
-    private String name;
-
-    public String getEmail() {
-        return email;
+public class FriendRequest
+{
+	private String reqSender;
+	private String reqReciever;
+	private String msg;
+	private String reqdate;
+	private String status;
+	private String reqid;
+	private String name;
+	private String email;
+        private String image;
+	
+	public String getEmail()
+	{
+		return email;
+	}
+	public void setEmail(String email)
+	{
+		this.email = email;
+	}
+	public String getName()
+	{
+            return name;
+	}
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+	public String getReqid()
+	{
+		return reqid;
     }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    private String email;
-     Connection con=null;
-    PreparedStatement ps=null;
-    
-
-    public String getReqid() {
-        return reqid;
-    }
-
-    public void setReqid(String reqid) {
-        this.reqid = reqid;
-    }
-
-    public String getReqdate() {
-        return reqdate;
-    }
-
-    public void setReqdate(String reqdate) {
-        this.reqdate = reqdate;
-    }
-    
-
-    
-    
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public void setReqReciever(String reqReciever) {
-        this.reqReciever = reqReciever;
-    }
-
-    public void setReqSender(String reqSender) {
-        this.reqSender = reqSender;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public String getReqReciever() {
-        return reqReciever;
-    }
-
-    public String getReqSender() {
-        return reqSender;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status){
-        this.status=status;
-    }
-
-    public boolean sendRequest(){
-        boolean flag=false;
-       DbContainor.loadDbDriver();
-        try{
-            con=DriverManager.getConnection(DbContainor.dburl,DbContainor.dbuser,DbContainor.dbpwd);
-            ps=con.prepareStatement("insert into friendrequest values(?,?,?,?,?,?)");
-            ps.setString(1, "reqid");
-            ps.setString(2, "reqsender");
-            ps.setString(3,"reqreceiver");
-            try{
-                ps.setDate(4,DbContainor.toSQLDate(reqdate));
-            }
-             catch (ParseException ex) {
-                System.out.println("can not convert date : "+ex.getMessage());
-            }
-            ps.setString(5,"message");
-            ps.setString(6,"status");
-            int res=ps.executeUpdate();
-            if(res>0){
-                  System.out.println("Data Succesfully updated into FriendRequest table  ");
-                flag=true;
-            }
-            else
-                  System.out.println("Could not update data into discussion table.");
-            con.close();
+	public void setReqid(String reqid)
+	{
+		this.reqid = reqid;
+	}
+	public String getReqdate()
+	{
+		return reqdate;
+	}
+	public void setReqdate(String reqdate)
+	{
+		this.reqdate = reqdate;
+	}
+	public void setMsg(String msg)
+	{
+		this.msg = msg;
+	}
+	public void setReqReciever(String reqReciever)
+	{
+		this.reqReciever = reqReciever;
+	}
+	public void setReqSender(String reqSender)
+	{
+		this.reqSender = reqSender;
+	}
+	public String getMsg()
+	{
+		return msg;
+	}
+	public String getReqReciever()
+	{
+		return reqReciever;
+	}
+	public String getReqSender()
+	{
+		return reqSender;
+	}
+	public String getStatus()
+	{
+		return status;
+	}
+        public String getImage()
+        {
+            return image;
+        }
+        public void setImage(String image)
+        {
+            this.image = image;
         }
         
-        catch(SQLException sqle){
-            System.out.println("SQL Error in sendRequest() of FriendRequest.java");
+	public void setStatus(String status)
+	{
+            this.status=status;
         }
-     return false;  
-    }
+	
+	public boolean sendRequest()
+	{
+		boolean ret_val = false;
+		String query = null;
+		DbContainor.loadDbDriver();
+		try
+		{
+                        query = "insert into friendrequest values(?,?,?,?,?,?)";
+			Connection con = DbContainor.createConnection();
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setString(1,this.getReqid());
+			ps.setString(2, this.getReqSender());
+			ps.setString(3,this.getReqReciever());
+			try
+			{
+				ps.setDate(4,DbContainor.toSQLDate(this.getReqdate()));
+			}
+			catch (ParseException ex)
+			{
+				System.out.println("can not convert date : "+ex.getMessage());
+			}
+			ps.setString(5,this.getMsg());
+			ps.setString(6,this.getStatus());
+			if(ps.executeUpdate()>0)
+			{
+				System.out.println("Data Succesfully updated into FriendRequest table  ");
+				ret_val = true;
+			}
+			else
+			{
+				System.out.println("Could not update data into discussion table.");
+			}
+			con.close();
+		}
+		catch(NullPointerException npe)
+		{
+			System.out.println("DbContainor.createConnection():can not create connection to database : "+npe.getMessage());
+		}
+		catch(SQLException sqle)
+		{
+			System.out.println("SQL Error in sendRequest() of FriendRequest.java : "+sqle.getMessage());
+		}
+		return ret_val;  
+	}
     
-    public FriendRequest findReceivedRequest(){
-        FriendRequest fr=new FriendRequest();
-        DbContainor.loadDbDriver();
-        try{
-            con=DriverManager.getConnection(DbContainor.dburl,DbContainor.dbuser,DbContainor.dbpwd);
-            ps=con.prepareStatement("select fname, mname, lname, email from userinfo where email in (select reqsender from friendrequest where REQRECEIVER=? and status='unconfirmed')");
-            ps.setString(1,reqReciever);
-            ResultSet rs=ps.executeQuery();
-            if(rs.next()){
-                
-                fr.setName(rs.getString("fname")+" "+rs.getString("mname")+" "+rs.getString("lname"));
-                fr.setEmail(rs.getString("email"));
-                
-            }
-            con.close();
-        }
-            catch(SQLException sqle){
-                System.out.println("SQL Error in findRecievedRequest() of FriendRequest.java");
-            }
-        return fr;
-        
-    }
+	public ArrayList<FriendRequest> findReceivedRequest()
+	{
+                String query = null;
+                ArrayList<FriendRequest> frnd_req_list = new ArrayList<FriendRequest>();
+		DbContainor.loadDbDriver();
+		try
+		{
+			query = "select fname, mname, lname, email, userimage from userinfo where email in (select reqsender from friendrequest where REQRECEIVER=? and status='Pending')";
+			Connection con = DbContainor.createConnection();
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setString(1,reqReciever);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next())
+			{
+                                FriendRequest frnd_req = new FriendRequest();	
+                                String mname = rs.getString("mname");
+				/* System.out.println("mname is  :" +mname); */
+				if(mname==null)
+				{
+					mname=" ";
+				}
+				frnd_req.setName(rs.getString("fname")+" "+mname+" "+rs.getString("lname"));
+				frnd_req.setEmail(rs.getString("email"));
+                                frnd_req.setImage(rs.getString("userimage"));
+                                frnd_req_list.add(frnd_req);
+			}
+			con.close();
+		}
+		catch(NullPointerException npe)
+		{
+			System.out.println("DbContainor.createConnection():can not create connection to database : "+npe.getMessage());
+		}
+		catch(SQLException sqle)
+		{
+			System.out.println("SQL Error in findRecievedRequest() of FriendRequest.java  :"+ sqle.getMessage());
+		}		
+		return frnd_req_list;
+	}
      
-    
-    public boolean updateRequest(){
-             boolean flag=false;
-             DbContainor.loadDbDriver();
-             try{
-         con=DriverManager.getConnection(DbContainor.dburl,DbContainor.dbuser,DbContainor.dbpwd);
-         ps=con.prepareStatement("update friendrequest set status='confirmed' where reqsender=? and reqreceiver=?");
-         ps.setString(1,reqSender);
-         ps.setString(2,reqReciever);
-         int res=ps.executeUpdate();
-         if(res>0){
-             System.out.println("friendrequest table updated successfully in updateRequest() in class FriendRequest.java");
-                    flag=true;
-         }
-         else
-             System.out.println("c'ldn't update friendrequest table  in updateRequest() in class FriendRequest.java");
-          }
-             catch(SQLException sqle){
-            System.out.println("SQL Error in updateRequest() of FriendRequest.java");
-        }
-             return flag;
-             }
-    
+	public boolean updateRequest()
+	{
+		boolean ret_val = false;
+		String query = null;
+		DbContainor.loadDbDriver();
+		try
+		{
+			query = "update friendrequest set status='confirmed' where reqsender=? and reqreceiver=?";
+			Connection con = DbContainor.createConnection();
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setString(1,reqSender);
+			ps.setString(2,reqReciever);
+			if(ps.executeUpdate()>0)
+			{
+				System.out.println("friendrequest table updated successfully in updateRequest() in class FriendRequest.java");
+				ret_val = true;
+			}
+			else
+			{
+				System.out.println("c'ldn't update friendrequest table  in updateRequest() in class FriendRequest.java");
+			}
+		}
+		catch(NullPointerException npe)
+		{
+			System.out.println("DbContainor.createConnection():can not create connection to database : "+npe.getMessage());
+		}
+		catch(SQLException sqle)
+		{
+			System.out.println("SQL Error in updateRequest() of FriendRequest.java  :"+ sqle.getMessage());
+		}			
+		return ret_val;
+	}
 }
